@@ -1,11 +1,10 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+require("dotenv").config();
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
-
-require("dotenv").config();
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -59,21 +58,21 @@ const run = async () => {
     };
 
     // API for payment
-    // app.post("/create-payment-intent", async (req, res) => {
-    //   const { totalPrice } = req.body;
-    //   const amount = parseInt(totalPrice) * 100;
-    //   // Create a PaymentIntent with the order amount and currency
-    //   const paymentIntent = await stripe.paymentIntents.create({
-    //     amount: amount,
-    //     currency: "usd",
+    app.post("/create-payment-intent", async (req, res) => {
+      const { totalPrice } = req.body;
+      const amount = parseInt(totalPrice) * 100;
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
 
-    //     payment_method_types: ["card"]
-    //   });
+        payment_method_types: ["card"]
+      });
 
-    //   res.send({
-    //     clientSecret: paymentIntent.client_secret,
-    //   });
-    // });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
 
     //API to post a user
     app.put("/user/:email", async (req, res) => {
@@ -128,7 +127,7 @@ const run = async () => {
     });
 
     //API to make Admin
-    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
+    app.put("/user/admin/:email", verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
       const options = { upsert: true }
@@ -160,7 +159,7 @@ const run = async () => {
     });
 
     //API to get all admin
-    app.get("/admin", async (req, res) => {
+    app.get("/admin", verifyJWT, async (req, res) => {
       const admins = await adminsCollection.find({}).toArray();
       res.send(admins);
     });
@@ -193,7 +192,7 @@ const run = async () => {
     });
 
     //API to get all tools
-    app.get("/tools", async (req, res) => {
+    app.get("/tools", verifyJWT, async (req, res) => {
       const tools = await toolsCollection.find({}).toArray();
       res.send(tools);
     });
@@ -206,7 +205,7 @@ const run = async () => {
     });
 
     ////API to get all orders
-    app.get("/orders", async (req, res) => {
+    app.get("/orders", verifyJWT, async (req, res) => {
       const orders = await ordersCollection.find({}).toArray();
       res.send(orders);
     });
@@ -262,7 +261,7 @@ const run = async () => {
     });
 
     //API to get all reviews
-    app.get("/reviews", async (req, res) => {
+    app.get("/reviews", verifyJWT, async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
     });
@@ -310,7 +309,7 @@ const run = async () => {
     });
 
     //API to update a tool
-    app.put("/product/:id", verifyJWT, async (req, res) => {
+    app.put("/product/:id", async (req, res) => {
       // const decodedEmail = req.decoded.email;
       // const email = req.headers.email;
       const id = req.params.id;
