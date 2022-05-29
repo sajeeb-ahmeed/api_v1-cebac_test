@@ -192,7 +192,7 @@ const run = async () => {
     });
 
     //API to get all tools
-    app.get("/tools", verifyJWT, async (req, res) => {
+    app.get("/tools", async (req, res) => {
       const tools = await toolsCollection.find({}).toArray();
       res.send(tools);
     });
@@ -205,7 +205,7 @@ const run = async () => {
     });
 
     ////API to get all orders
-    app.get("/orders", verifyJWT, async (req, res) => {
+    app.get("/orders", async (req, res) => {
       const orders = await ordersCollection.find({}).toArray();
       res.send(orders);
     });
@@ -261,7 +261,7 @@ const run = async () => {
     });
 
     //API to get all reviews
-    app.get("/reviews", verifyJWT, async (req, res) => {
+    app.get("/reviews", async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
     });
@@ -299,7 +299,7 @@ const run = async () => {
     });
 
     //API delete a product
-    app.delete("/product/:id", verifyJWT, async (req, res) => {
+    app.delete("/product/:id", async (req, res) => {
       // const decodedEmail = req.decoded.email;
       // const email = req.headers.email;
       const id = req.params.id;
